@@ -1,0 +1,17 @@
+# Credentials directory
+creds/
+
+.venv/
+
+# macOS system files
+.DS_Store
+
+__pycache__/
+*.pyc
+*.pyo
+
+*.log
+
+.env
+*.env
+.vscode/
