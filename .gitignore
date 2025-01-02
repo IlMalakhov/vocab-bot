@@ -1,6 +1,4 @@
-# Credentials directory
-creds/
-
+.env
 .venv/
 
 # macOS system files

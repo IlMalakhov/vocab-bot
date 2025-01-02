@@ -4,17 +4,12 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 import psycopg2
 from typing import Final
-import json
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 
-def access_data(file_path):
-    with open(file_path) as file:
-        access_data = json.load(file)
-    return access_data
-
-creds = access_data(file_path='creds/creds.json')
-
-TOKEN = creds["TELEGRAM_TOKEN"]
+TOKEN = os.getenv('TELEGRAM_TOKEN')
 BOT_USERNAME: Final = '@ElijahEnglishBot'
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -130,10 +125,10 @@ def main():
     # Connect to the db
     try:
         conn = psycopg2.connect(
-            host=creds["DB_HOST"],
-            database=creds["DB_NAME"],
-            user=creds["DB_USER"],
-            password=creds["DB_PASSWORD"]
+            host=os.getenv("DB_HOST"),
+            database=os.getenv("DB_NAME"),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD")
         )
         print("Database connection established successfully.")
     except Exception as e:
