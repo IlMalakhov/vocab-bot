@@ -23,12 +23,27 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             if result:
                 # User exists
-                await update.message.reply_text("Welcome back! I will help you define and remember new vocabulary!")
+                await update.message.reply_text(
+                    "*Welcome back\\!*\n"
+                    "I will help you define and remember new vocabulary:\n\n"
+                    "1\\. Type any word to get its definition\n"
+                    "2\\. /mywords to see your wordlist\n\n"
+                    "[Visit our bot's GitHub](https://github.com/IlMalakhov/vocab-bot)", 
+                    parse_mode="MarkdownV2"
+                    )
             else:
                 # User does not exist
                 cursor.execute("INSERT INTO user_words (user_id, words) VALUES (%s, %s);", (user_id, []))
                 conn.commit()
-                await update.message.reply_text("Hi! I will help you define and remember new vocabulary!")
+                await update.message.reply_text(
+                    "Nice to meet you, I'm Vocab Bot\\!\n"                    
+                    "I will help you define and remember new vocabulary:\n\n"
+                    "1\\. Type any word to get its definition\n"
+                    "2\\. /mywords to see your wordlist\n\n"
+                    "[Visit our bot's GitHub](https://github.com/IlMalakhov/vocab-bot)", 
+                    parse_mode="MarkdownV2",
+                    disable_web_page_preview=True
+                    )
     except Exception as e:
         await update.message.reply_text(f"An error occurred: {str(e)}")
 
@@ -121,6 +136,9 @@ async def mywords_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         await update.message.reply_text(f"An error occurred: {str(e)}")
 
+async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    ...
+
 def main():
     # Connect to the db
     try:
@@ -144,6 +162,7 @@ def main():
     application.add_handler(CommandHandler("mywords", mywords_command))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     application.add_handler(CallbackQueryHandler(add_word_callback, pattern="^add_"))
+    application.add_handler(CommandHandler("stats", stats_command))
 
     application.run_polling()
 
