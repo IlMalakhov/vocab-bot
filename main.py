@@ -6,6 +6,7 @@ import psycopg2
 from typing import Final
 import os
 from dotenv import load_dotenv
+from utils import db, stats_stuff
 
 load_dotenv()
 
@@ -18,7 +19,11 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         with conn.cursor() as cursor:
             # Check if the user already exists in db
-            cursor.execute("SELECT user_id FROM user_words WHERE user_id = %s;", (user_id,))
+            cursor.execute(f"""
+                           SELECT user_id
+                           FROM user_words
+                           WHERE user_id = {user_id};
+                           """)
             result = cursor.fetchone()
 
             if result:
@@ -100,7 +105,11 @@ async def add_word_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         with conn.cursor() as cursor:
             # Check if the user already has an entry in the database
-            cursor.execute("SELECT words FROM user_words WHERE user_id = %s;", (user_id,))
+            cursor.execute(f"""
+                           SELECT words 
+                           FROM user_words 
+                           WHERE user_id = {user_id};
+                           """)
             result = cursor.fetchone()
 
             if result:
@@ -140,33 +149,29 @@ async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ...
 
 def main():
-    # Connect to the db
-    try:
-        conn = psycopg2.connect(
-            host=os.getenv("DB_HOST"),
-            database=os.getenv("DB_NAME"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD")
-        )
-        print("Database connection established successfully.")
-    except Exception as e:
-        print(f"Error connecting to database: {e}")
-        return
-
     application = Application.builder().token(TOKEN).build()
+    conn = None
 
-    application.bot_data["conn"] = conn
+    try:
+        conn = db.db_connect()
+        application.bot_data["conn"] = conn
 
-    application.add_handler(CommandHandler("start", start_command))
-    application.add_handler(CommandHandler("help", help_command))
-    application.add_handler(CommandHandler("mywords", mywords_command))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    application.add_handler(CallbackQueryHandler(add_word_callback, pattern="^add_"))
-    application.add_handler(CommandHandler("stats", stats_command))
+        application.add_handler(CommandHandler("start", start_command))
+        application.add_handler(CommandHandler("help", help_command))
+        application.add_handler(CommandHandler("mywords", mywords_command))
+        application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+        application.add_handler(CallbackQueryHandler(add_word_callback, pattern="^add_"))
+        application.add_handler(CommandHandler("stats", stats_command))
 
-    application.run_polling()
+        print("Bot started")
+        application.run_polling()
 
-    conn.close()
+    except Exception as e:
+        print(f"Error: {e}")
+
+    finally:
+        if conn:
+            db.db_close(conn)
 
 if __name__ == "__main__":
     main()

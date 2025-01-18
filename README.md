@@ -18,3 +18,6 @@ You will have to create a `.env` file with the following:
 - TELEGRAM_TOKEN=your_telegram_token (from [Bot Father](https://t.me/BotFather))
 
 As well as create a table `user_words` with `user_id` and `words`.
+
+> [!note]
+> The Database schema is soon going to be reworked to account for the new `/stats` command
