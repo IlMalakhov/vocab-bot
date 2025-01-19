@@ -1,17 +1,18 @@
-import requests
-from bs4 import BeautifulSoup
+# Telegram
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
-import psycopg2
-from typing import Final
+
+# OS
 import os
 from dotenv import load_dotenv
-from utils import db, stats_stuff
+
+# Utilities
+from utils import db, definitions, stats_stuff
 
 load_dotenv()
 
 TOKEN = os.getenv('TELEGRAM_TOKEN')
-BOT_USERNAME: Final = '@ElijahEnglishBot'
+BOT_USERNAME = '@ElijahEnglishBot'
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     conn = context.bot_data["conn"]
@@ -52,26 +53,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         print(f"Error fetching or inserting info about the user: {e}")
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text('Type any word to get its definition.\nUse /mywords to see your saved words.')
-
-def get_definition(word):
-    url = f"https://www.thefreedictionary.com/{word}"
-    response = requests.get(url)
-
-    if response.status_code != 200:
-        return f"Error: Unable to fetch data for {word}"
-
-    soup = BeautifulSoup(response.text, 'html.parser')
-
-    # Look for the definition section in the HTML
-    definition_sections = soup.find('div', {'class': 'ds-list'})
-    if not definition_sections:
-        return f"No definition found for {word}."
-
-    # Collect all definitions
-    definition_list = [definition.get_text().strip() for definition in definition_sections]
-
-    return '\n'.join(definition_list)
+    await update.message.reply_text('Type any word to get its definition\n\nSave words by tapping *Add word* under the definition\n\nUse */mywords* to see your saved words and /stats to view your progress', parse_mode="MarkdownV2")
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
@@ -79,7 +61,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if text:
         word = text.lower()
-        definition = get_definition(word)
+        definition = definitions.get_definition(word)
 
         if definition:
             # Create an inline button for adding the word
