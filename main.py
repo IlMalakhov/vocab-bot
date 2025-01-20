@@ -56,7 +56,6 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text('Type any word to get its definition\n\nSave words by tapping *Add word* under the definition\n\nUse */mywords* to see your saved words and /stats to view your progress', parse_mode="MarkdownV2")
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.message.from_user.id
     text = update.message.text.strip()
 
     if text:
@@ -134,6 +133,19 @@ async def mywords_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         await update.message.reply_text(f"Error: {e}")
 
+async def word_stream_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    word = definitions.get_random_word()
+    definition = definitions.get_definition(word)
+
+    if word and definition:
+        keyboard = [[InlineKeyboardButton("Add Word", callback_data=f"add_{word}")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        await update.message.reply_text(f"{word}\n\n{definition}", reply_markup=reply_markup)
+    else:
+        await update.message.reply_text("I coudnt't find a suitable word for you..")
+
+
 async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     conn = context.bot_data["conn"]
     user_id = update.message.from_user.id
@@ -161,6 +173,7 @@ def main():
         application.add_handler(CommandHandler("start", start_command))
         application.add_handler(CommandHandler("help", help_command))
         application.add_handler(CommandHandler("mywords", mywords_command))
+        application.add_handler(CommandHandler("word_stream", word_stream_command))
         application.add_handler(CommandHandler("stats", stats_command))
         application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
         application.add_handler(CallbackQueryHandler(add_word_callback, pattern="^add_"))
