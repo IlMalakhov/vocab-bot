@@ -4,10 +4,12 @@ This is a Telegram bot designed to help users look up **word definitions** in En
 
 ## Usage
 
-- **Start the Bot**: Send /start to the bot to initialize.
+- **Start the Bot**: Send `/start` to the bot to introduce itself.
 - **Look Up Definitions**: Send any word, and the bot will return its definition.
 - **Save Words**: Click the “Add Word” button under a definition to save it.
-- **View Saved Words**: Use /mywords to see your saved vocabulary list.
+- **View Saved Words**: Use `/mywords` to see your saved vocabulary list.
+- **View learning progress**: Use `/stats` to see a graph of how many words you added.
+- **Word Stream**: Use `/word_stream` to get a random word from the dictionary.
 
 ## Build you own Vocab Bot
 
