@@ -11,6 +11,27 @@ This is a Telegram bot designed to help users look up **word definitions** in En
 - **View learning progress**: Use `/stats` to see a graph of how many words you added.
 - **Word Stream**: Use `/word_stream` to get a random word from the dictionary.
 
+## Dependencies
+
+The bot relies on:
+
+- **Telegram**: python-telegram-bot v21.9 for bot functionality
+- **Web Scraping**:
+  - requests v2.32.3
+  - BeautifulSoup4 v4.12.3
+- **Database**:
+  - PostgreSQL 16
+  - psycopg2-binary v2.9.10
+- **Data Analysis**:
+  - pandas v2.2.3
+  - matplotlib v3.10.0
+  - numpy v2.2.1
+- **Environment**:
+  - python-dotenv v1.0.1
+- **HTTP Client**:
+  - httpx v0.28.1
+  - httpcore v1.0.7
+
 ## Build you own Vocab Bot
 
 ### Credentials
