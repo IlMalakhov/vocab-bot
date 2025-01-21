@@ -14,6 +14,7 @@ load_dotenv()
 TOKEN = os.getenv('TELEGRAM_TOKEN')
 BOT_USERNAME = '@ElijahEnglishBot'
 
+# Commands
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     conn = context.bot_data["conn"]
     user_id = update.message.from_user.id
@@ -62,7 +63,62 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "• */mywords* to see your saved words 📚\n"
         "• */stats* to see your progress 📊",
         parse_mode="MarkdownV2")
+    
+async def word_stream_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    word = definitions.get_random_word()
+    definition = definitions.get_definition(word)
 
+    if word and definition:
+        keyboard = [
+            [InlineKeyboardButton("Add Word", callback_data=f"add_{word}")],
+            [InlineKeyboardButton("Next", callback_data="next")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        await update.message.reply_text(f"{word}\n\n{definition}", reply_markup=reply_markup)
+    else:
+        await update.message.reply_text("I coudnt't find a suitable word for you..")
+
+async def mywords_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    conn = context.bot_data["conn"]
+    user_id = update.message.from_user.id
+
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                           SELECT w.word 
+                           FROM user_words uw 
+                           JOIN words w 
+                           ON uw.word_id = w.word_id 
+                           WHERE uw.user_id = %s;""", (user_id,))
+            
+            results = cursor.fetchall()
+
+            if results:
+                words = [row[0] for row in results]
+                await update.message.reply_text("Your saved words:\n" + '\n'.join(words))
+            else:
+                await update.message.reply_text("You have no saved words.")
+    except Exception as e:
+        await update.message.reply_text(f"Error: {e}")
+
+async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    conn = context.bot_data["conn"]
+    user_id = update.message.from_user.id
+
+    plot_png = stats_stuff.get_word_progress_plot(conn=conn, user_id=user_id)
+
+    # Send png
+    if plot_png:
+        await context.bot.send_photo(
+        chat_id=update.effective_chat.id,
+        photo=plot_png,
+        caption="Here is a graph of how many words you added over time\n\n*Great job\\!*", parse_mode="MarkdownV2"
+        )
+    else:
+        await update.message.reply_text("Coundn't find data for stats...")
+
+# Handle messages
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.strip()
 
@@ -81,6 +137,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text("Something seems wrong with the word you sent me...")
 
+# Callbacks
 async def add_word_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     conn = context.bot_data["conn"]
     query = update.callback_query
@@ -118,57 +175,27 @@ async def add_word_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         await query.answer(f"Error trying to add a word to the list: {e}")
 
-async def mywords_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    conn = context.bot_data["conn"]
-    user_id = update.message.from_user.id
-
-    try:
-        with conn.cursor() as cursor:
-            cursor.execute("""
-                           SELECT w.word 
-                           FROM user_words uw 
-                           JOIN words w 
-                           ON uw.word_id = w.word_id 
-                           WHERE uw.user_id = %s;""", (user_id,))
-            
-            results = cursor.fetchall()
-
-            if results:
-                words = [row[0] for row in results]
-                await update.message.reply_text("Your saved words:\n" + '\n'.join(words))
-            else:
-                await update.message.reply_text("You have no saved words.")
-    except Exception as e:
-        await update.message.reply_text(f"Error: {e}")
-
-async def word_stream_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def next_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    
+    # Generate new word and definition
     word = definitions.get_random_word()
     definition = definitions.get_definition(word)
 
     if word and definition:
-        keyboard = [[InlineKeyboardButton("Add Word", callback_data=f"add_{word}")]]
+        keyboard = [
+            [InlineKeyboardButton("Add Word", callback_data=f"add_{word}")],
+            [InlineKeyboardButton("Next", callback_data="next")]
+        ]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
-        await update.message.reply_text(f"{word}\n\n{definition}", reply_markup=reply_markup)
-    else:
-        await update.message.reply_text("I coudnt't find a suitable word for you..")
-
-
-async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    conn = context.bot_data["conn"]
-    user_id = update.message.from_user.id
-
-    plot_png = stats_stuff.get_word_progress_plot(conn=conn, user_id=user_id)
-
-    # Send png
-    if plot_png:
-        await context.bot.send_photo(
-        chat_id=update.effective_chat.id,
-        photo=plot_png,
-        caption="Here is a graph of how many words you added over time\n\n*Great job\\!*", parse_mode="MarkdownV2"
+        # Edit the original message
+        await query.edit_message_text(
+            text=f"{word}\n\n{definition}",
+            reply_markup=reply_markup
         )
     else:
-        await update.message.reply_text("Coundn't find data for stats...")
+        await query.edit_message_text("I couldn't find a suitable word for you..")
 
 def main():
     application = Application.builder().token(TOKEN).build()
@@ -178,13 +205,25 @@ def main():
         conn = db.db_connect()
         application.bot_data["conn"] = conn
 
-        application.add_handler(CommandHandler("start", start_command))
-        application.add_handler(CommandHandler("help", help_command))
-        application.add_handler(CommandHandler("mywords", mywords_command))
-        application.add_handler(CommandHandler("word_stream", word_stream_command))
-        application.add_handler(CommandHandler("stats", stats_command))
-        application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-        application.add_handler(CallbackQueryHandler(add_word_callback, pattern="^add_"))
+        # Command handlers
+        start_handler = CommandHandler("start", start_command)
+        help_handler = CommandHandler("help", help_command)
+        mywords_handler = CommandHandler("mywords", mywords_command)
+        word_stream_handler = CommandHandler("word_stream", word_stream_command)
+        stats_handler = CommandHandler("stats", stats_command)
+        message_handler = MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message)
+        add_word_callback_handler = CallbackQueryHandler(add_word_callback, pattern="^add_")
+        next_word_callback_handler = CallbackQueryHandler(next_callback, pattern="^next$")
+
+        # Add handlers to application
+        application.add_handler(start_handler)
+        application.add_handler(help_handler)
+        application.add_handler(mywords_handler)
+        application.add_handler(word_stream_handler)
+        application.add_handler(stats_handler)
+        application.add_handler(message_handler)
+        application.add_handler(add_word_callback_handler)
+        application.add_handler(next_word_callback_handler)
 
         print("Bot started")
         application.run_polling()
