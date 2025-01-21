@@ -30,22 +30,24 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if result:
                 # User exists
                 await update.message.reply_text(
-                    "*Welcome back\\!*\n\n"
-                    "I will help you define and remember new vocabulary:\n\n"
-                    "1\\. Type any word to get its definition\n"
-                    "2\\. /mywords to see your wordlist\n\n"
-                    "[Visit our bot's GitHub](https://github.com/IlMalakhov/vocab-bot)", 
+                    "*Welcome back\\!* ☀️\n\n"
+                    "I will help you define and remember new vocabulary 📖\n\n"
+                    "1\\. Type any word to get its definition 💬\n"
+                    "2\\. /mywords to see your wordlist 📚\n\n"
+                    "_I can do a lot more, just use_ */help* _and see for yourself_ 🎉\n\n\n"
+                    "Also, check out [our bot's GitHub](https://github.com/IlMalakhov/vocab-bot) to take a peek under the hood ⚙️", 
                     parse_mode="MarkdownV2")
             else:
                 # User does not exist
                 cursor.execute("INSERT INTO users (user_id) VALUES (%s);", (user_id,))
                 conn.commit()
                 await update.message.reply_text(
-                    "Nice to meet you, I'm Vocab Bot\\!\n\n"                    
-                    "I will help you define and remember new vocabulary:\n\n"
-                    "1\\. Type any word to get its definition\n"
-                    "2\\. /mywords to see your wordlist\n\n"
-                    "[Visit our bot's GitHub](https://github.com/IlMalakhov/vocab-bot)", 
+                    "Nice to meet you, I'm Vocab Bot\\! ☀️\n\n"                    
+                    "I will help you define and remember new vocabulary 📖\n\n"
+                    "1\\. Type any word to get its definition 💬\n"
+                    "2\\. /mywords to see your wordlist 📚\n\n"
+                    "_I can do a lot more, just use_ */help* _and see for yourself_ 🎉\n\n\n" 
+                    "Also, check out [our bot's GitHub](https://github.com/IlMalakhov/vocab-bot) to take a peek under the hood 🛠️", 
                     parse_mode="MarkdownV2",
                     disable_web_page_preview=True)
 
@@ -53,7 +55,13 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         print(f"Error fetching or inserting info about the user: {e}")
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text('Type any word to get its definition\n\nSave words by tapping *Add word* under the definition\n\nUse */mywords* to see your saved words and /stats to view your progress', parse_mode="MarkdownV2")
+    await update.message.reply_text(
+        "Type any word to get its definition 📖\n\n"
+        "Save words by tapping *Add word* under the definition\n\n"
+        "• */word\\_stream* to learn random new words 🎲\n"
+        "• */mywords* to see your saved words 📚\n"
+        "• */stats* to see your progress 📊",
+        parse_mode="MarkdownV2")
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.strip()
