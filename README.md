@@ -5,8 +5,10 @@ This is a Telegram bot designed to help users look up **word definitions** in En
 ## Usage
 
 - **Start the Bot**: Send `/start` to the bot to introduce itself.
-- **Look Up Definitions**: Send any word, and the bot will return its definition.
-- **Save Words**: Click the “Add Word” button under a definition to save it.
+- **Look Up Definitions**: Type any word, and the bot will return its definition.
+  - **Save Words**: Click the “Add Word” button under a definition to save it.
+  - **Get Synonyms**: Click "Synonyms" button to show synonyms from [thesaurus.com](https://www.thesaurus.com)
+  - **View pictures**: Click "Picture" button to fetch a picture using [Unsplash](https://www.unsplash.com) API
 - **View Saved Words**: Use `/mywords` to see your saved vocabulary list.
 - **View learning progress**: Use `/stats` to see a graph of how many words you added.
 - **Word Stream**: Use `/word_stream` to get a random word from the dictionary.
@@ -19,6 +21,8 @@ The bot relies on:
 - **Web Scraping**:
   - requests v2.32.3
   - BeautifulSoup4 v4.12.3
+- **Image Fetching**:
+  - Unsplash API for fetching images
 - **Database**:
   - PostgreSQL 16
   - psycopg2-binary v2.9.10
@@ -39,11 +43,17 @@ The bot relies on:
 You will have to create a `.env` file with the following:
 
 ```env
+# PostgreSQL database credentials
 DB_HOST=<your_server>
 DB_NAME=<your_db_name>
 DB_USER=<your_db_user_name>
 DB_PASSWORD=<your_db_user_password>
+
+# Bot token
 TELEGRAM_TOKEN=<your_telegram_token>
+
+# Unsplash API access key
+UNSPLASH_API_KEY=<your_unsplash_access_key>
 ```
 
 `TELEGRAM_TOKEN` is from [Bot Father](https://t.me/BotFather)

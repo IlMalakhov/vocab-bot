@@ -6,14 +6,16 @@ def get_definition(word):
     response = requests.get(url)
 
     if response.status_code != 200:
-        return f"definitions.py: Unable to fetch data for {word}"
+        print(f"definitions.py: Unable to fetch data for {word}")
+        return None
 
     soup = BeautifulSoup(response.text, 'html.parser')
 
     # Look for the definition section in the HTML
     definition_sections = soup.find('div', {'class': 'ds-list'})
     if not definition_sections:
-        return f"definitions.py: No definition found for {word}."
+        print(f"definitions.py: No definition found for {word}.")
+        return None
 
     # Collect all definitions
     definition_list = [definition.get_text().strip() for definition in definition_sections]
@@ -42,6 +44,7 @@ def get_synonyms(word):
     
     if response.status_code != 200:
         print(f"definitions.py: Unable to fetch synonyms for {word}")
+        return None
     
     soup = BeautifulSoup(text, 'html.parser')
     
@@ -53,7 +56,8 @@ def get_synonyms(word):
         synonyms = synonyms_section.find_all('span')
 
     if not synonyms:
-        return f"definitions.py: No synonyms found for {word}"
+        print(f"definitions.py: No synonyms found for {word}")
+        return None
 
     synonym_list = [synonym.get_text().strip() for synonym in synonyms]
     
