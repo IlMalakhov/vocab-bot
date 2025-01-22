@@ -34,3 +34,27 @@ def get_random_word():
 
     # The first list item is an empty string, so...
     return random_list[1]
+
+def get_synonyms(word):
+    url = f"https://www.thesaurus.com/browse/{word}"
+    response = requests.get(url)
+    text = response.text
+    
+    if response.status_code != 200:
+        print(f"definitions.py: Unable to fetch synonyms for {word}")
+    
+    soup = BeautifulSoup(text, 'html.parser')
+    
+    synonyms_section = soup.find('div', {'class': 'QXhVD4zXdAnJKNytqXmK'})
+    synonyms = synonyms_section.find_all('li')
+
+    # Really don't ask about this
+    if not synonyms:
+        synonyms = synonyms_section.find_all('span')
+
+    if not synonyms:
+        return f"definitions.py: No synonyms found for {word}"
+
+    synonym_list = [synonym.get_text().strip() for synonym in synonyms]
+    
+    return synonym_list
