@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 import logging
 
 # Utilities
-from utils import db, definitions, stats_stuff
+from utils import db, definitions, images, stats_stuff
 
 # Enable logging
 logging.basicConfig(
@@ -21,7 +21,6 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 load_dotenv()
-
 TOKEN = os.getenv('TELEGRAM_TOKEN')
 BOT_USERNAME = '@ElijahEnglishBot'
 
@@ -137,13 +136,13 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if text:
         word = text.lower()
         definition = definitions.get_definition(word)
-        synonyms = definitions.get_synonyms(word)
 
         if definition:
             # Create an inline button for adding the word
             keyboard = [
-                [InlineKeyboardButton("Add Word", callback_data=f"add_{word}")],
-                [InlineKeyboardButton("Synonyms", callback_data=f"syn_{word}")]
+                [InlineKeyboardButton("📝 Add Word 📝", callback_data=f"add_{word}")],
+                [InlineKeyboardButton("🔄 Synonyms 🔄", callback_data=f"syn_{word}")],
+                [InlineKeyboardButton(f"🖼️ Pictire for {word} 🖼️", callback_data=f"pic_{word}")]
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -195,17 +194,16 @@ async def synonyms_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     word = query.data.split('_', 1)[1]
     word = word.strip().lower()
-
     synonyms = definitions.get_synonyms(word)
 
-    if synonyms:
-        # Remove the "Synonyms" button from the keyboard
-        keyboard = [
-            [button for button in row if "syn_" not in button.callback_data]
-            for row in query.message.reply_markup.inline_keyboard
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
+    # Remove the "Synonyms" button from the keyboard
+    keyboard = [
+        [button for button in row if "syn_" not in button.callback_data]
+        for row in query.message.reply_markup.inline_keyboard
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
 
+    if synonyms:
         await query.edit_message_text(
             text=query.message.text + f"\n\nSynonyms for {word}:\n\n" + '\n'.join(synonyms),
             reply_markup=reply_markup
@@ -213,7 +211,7 @@ async def synonyms_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await query.edit_message_text(
             text=query.message.text + f"\n\nCouldn't find synonyms for {word}..",
-            reply_markup=query.message.reply_markup
+            reply_markup=reply_markup
         )
 
 async def next_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -239,6 +237,34 @@ async def next_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await query.edit_message_text("I couldn't find a suitable word for you..")
 
+async def send_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    word = query.data.split('_', 1)[1]
+    word = word.strip().lower()
+    image_url = images.fetch_image_url(word)
+
+    keyboard = [
+    [button for button in row if "pic_" not in button.callback_data]
+    for row in query.message.reply_markup.inline_keyboard
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    if image_url:
+        await context.bot.send_photo(
+            chat_id=query.message.chat_id, 
+            photo=image_url, 
+            caption=f"Here is an image for {word} 🖼️",
+            has_spoiler=True,
+            )
+        
+        await query.edit_message_text(text=query.message.text, reply_markup=reply_markup)
+
+    else:
+        await query.edit_message_text(
+            text=query.message.text + f"\n\nCouldn't find an image for {word}..",
+            reply_markup=reply_markup
+        )
+
 def main():
     application = Application.builder().token(TOKEN).build()
     conn = None
@@ -257,6 +283,7 @@ def main():
         add_word_callback_handler = CallbackQueryHandler(add_word_callback, pattern="^add_")
         next_word_callback_handler = CallbackQueryHandler(next_callback, pattern="^next$")
         synonyms_callback_handler = CallbackQueryHandler(synonyms_callback, pattern="^syn_")
+        images_callback_handler = CallbackQueryHandler(send_image, pattern="^pic_")
 
         # Add handlers to application
         application.add_handler(start_handler)
@@ -268,6 +295,7 @@ def main():
         application.add_handler(add_word_callback_handler)
         application.add_handler(next_word_callback_handler)
         application.add_handler(synonyms_callback_handler)
+        application.add_handler(images_callback_handler)
 
         print("Bot started")
         application.run_polling()
