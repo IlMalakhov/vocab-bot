@@ -6,8 +6,19 @@ from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQu
 import os
 from dotenv import load_dotenv
 
+# Logging
+import logging
+
 # Utilities
 from utils import db, definitions, stats_stuff
+
+# Enable logging
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+)
+logging.getLogger("httpx").setLevel(logging.WARNING)
+
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
