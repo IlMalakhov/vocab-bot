@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 TOKEN = os.getenv('TELEGRAM_TOKEN')
-BOT_USERNAME = '@ElijahEnglishBot'
+BOT_USERNAME = os.getenv('BOT_USERNAME')
 
 # Commands
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):

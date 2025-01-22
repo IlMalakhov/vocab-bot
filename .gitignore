@@ -1,9 +1,14 @@
+# Creds
 .env
+*.env
+
+# Virtual Environment
 .venv/
 
 # macOS system files
 .DS_Store
 
+# Python
 __pycache__/
 *.pyc
 *.pyo
