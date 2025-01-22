@@ -71,7 +71,8 @@ async def word_stream_command(update: Update, context: ContextTypes.DEFAULT_TYPE
     if word and definition:
         keyboard = [
             [InlineKeyboardButton("Add Word", callback_data=f"add_{word}")],
-            [InlineKeyboardButton("Next", callback_data="next")]
+            [InlineKeyboardButton("Synonyms", callback_data=f"syn_{word}")],
+            [InlineKeyboardButton("Next", callback_data="next")],
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -125,10 +126,14 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if text:
         word = text.lower()
         definition = definitions.get_definition(word)
+        synonyms = definitions.get_synonyms(word)
 
         if definition:
             # Create an inline button for adding the word
-            keyboard = [[InlineKeyboardButton("Add Word", callback_data=f"add_{word}")]]
+            keyboard = [
+                [InlineKeyboardButton("Add Word", callback_data=f"add_{word}")],
+                [InlineKeyboardButton("Synonyms", callback_data=f"syn_{word}")]
+            ]
             reply_markup = InlineKeyboardMarkup(keyboard)
 
             await update.message.reply_text(definition, reply_markup=reply_markup)
@@ -175,6 +180,31 @@ async def add_word_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         await query.answer(f"Error trying to add a word to the list: {e}")
 
+async def synonyms_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    word = query.data.split('_', 1)[1]
+    word = word.strip().lower()
+
+    synonyms = definitions.get_synonyms(word)
+
+    if synonyms:
+        # Remove the "Synonyms" button from the keyboard
+        keyboard = [
+            [button for button in row if "syn_" not in button.callback_data]
+            for row in query.message.reply_markup.inline_keyboard
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        await query.edit_message_text(
+            text=query.message.text + f"\n\nSynonyms for {word}:\n\n" + '\n'.join(synonyms),
+            reply_markup=reply_markup
+        )
+    else:
+        await query.edit_message_text(
+            text=query.message.text + f"\n\nCouldn't find synonyms for {word}..",
+            reply_markup=query.message.reply_markup
+        )
+
 async def next_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     
@@ -185,6 +215,7 @@ async def next_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if word and definition:
         keyboard = [
             [InlineKeyboardButton("Add Word", callback_data=f"add_{word}")],
+            [InlineKeyboardButton("Synonyms", callback_data=f"syn_{word}")],
             [InlineKeyboardButton("Next", callback_data="next")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
@@ -214,6 +245,7 @@ def main():
         message_handler = MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message)
         add_word_callback_handler = CallbackQueryHandler(add_word_callback, pattern="^add_")
         next_word_callback_handler = CallbackQueryHandler(next_callback, pattern="^next$")
+        synonyms_callback_handler = CallbackQueryHandler(synonyms_callback, pattern="^syn_")
 
         # Add handlers to application
         application.add_handler(start_handler)
@@ -224,6 +256,7 @@ def main():
         application.add_handler(message_handler)
         application.add_handler(add_word_callback_handler)
         application.add_handler(next_word_callback_handler)
+        application.add_handler(synonyms_callback_handler)
 
         print("Bot started")
         application.run_polling()
