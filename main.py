@@ -88,7 +88,7 @@ async def word_stream_command(update: Update, context: ContextTypes.DEFAULT_TYPE
 
         await update.message.reply_text(f"{word}\n\n{definition}", reply_markup=reply_markup)
     else:
-        await update.message.reply_text("I coudnt't find a suitable word for you..")
+        await update.message.reply_text("I coudnt't find a suitable word for you...")
 
 async def mywords_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     conn = context.bot_data["conn"]
@@ -134,8 +134,11 @@ async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"📊 *Your Vocabulary Stats* 📊\n\n"
             f"📚 Total words saved: *{summary['total_words']}*\n"
             f"🌟 Days studying: *{summary['days_studying']}*\n"
-            f"⭐ Daily average: *{summary['daily_average']:.1f}*"
-            f"\n\nKeep up the good work! 🌹"
+            f"⭐ Daily average: *{summary['daily_average']:.1f}*\n\n"
+            f"☀️ Words added today: *{summary['words_today']}*\n"
+            f"📅 Words added this week: *{summary['words_this_week']}*\n\n"
+            f"🏆 Best day: *{summary['best_day']['date']}* with *{summary['best_day']['count']}* words\n\n"
+            f"Keep up the good work! 🌹"
         )
         await update.message.reply_text(formatted_summary, parse_mode="Markdown")
     
@@ -273,7 +276,7 @@ async def send_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     else:
         await query.edit_message_text(
-            text=query.message.text + f"\n\nCouldn't find an image for {word}..",
+            text=query.message.text + f"\n\nCouldn't find an image for {word}...",
             reply_markup=reply_markup
         )
 
