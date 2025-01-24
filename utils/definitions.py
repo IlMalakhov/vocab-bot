@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 
-def get_definitions(word):
+def get_definitions(word) -> str:
     response = requests.get(f'https://api.dictionaryapi.dev/api/v2/entries/en/{word}')
     
     if response.status_code == 200:
@@ -26,7 +26,7 @@ def get_definitions(word):
     print(f"definitions.py: No definitions found for '{word}'")
     return None
 
-def get_random_word():
+def get_random_word() -> str:
     url = "https://www.thefreedictionary.com/dictionary.htm"
     response = requests.get(url)
 
@@ -41,7 +41,7 @@ def get_random_word():
     # The first list item is an empty string, so...
     return random_list[1]
 
-def get_synonyms(word):
+def get_synonyms(word) -> list:
     url = f"https://www.thesaurus.com/browse/{word}"
     response = requests.get(url)
     text = response.text
@@ -53,9 +53,12 @@ def get_synonyms(word):
     soup = BeautifulSoup(text, 'html.parser')
     
     synonyms_section = soup.find('div', {'class': 'QXhVD4zXdAnJKNytqXmK'})
+
+    # Try this
     synonyms = synonyms_section.find_all('li')
 
-    # Really don't ask about this
+    # Then try this
+    # Really don't ask about it
     if not synonyms:
         synonyms = synonyms_section.find_all('span')
 
@@ -66,3 +69,18 @@ def get_synonyms(word):
     synonym_list = [synonym.get_text().strip() for synonym in synonyms]
     
     return synonym_list
+
+def get_pronunciation_url(word) -> str:
+    response = requests.get(f'https://api.dictionaryapi.dev/api/v2/entries/en/{word}')
+    
+    if response.status_code == 200:
+        data = response.json()
+
+        if data:
+            phonetics = data[0]['phonetics']
+            for phonetic in phonetics:
+                if 'audio' in phonetic and phonetic['audio']:
+                    return phonetic['audio']
+            
+    print(f"definitions.py: No pronunciation URL found for '{word}'")
+    return None
