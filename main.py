@@ -76,13 +76,13 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
 async def word_stream_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     word = definitions.get_random_word()
-    definition = definitions.get_definition(word)
+    definition = definitions.get_definitions(word)
 
     if word and definition:
         keyboard = [
-            [InlineKeyboardButton("Add Word", callback_data=f"add_{word}")],
-            [InlineKeyboardButton("Synonyms", callback_data=f"syn_{word}")],
-            [InlineKeyboardButton("Next", callback_data="next")],
+            [InlineKeyboardButton("📝 Add Word 📝", callback_data=f"add_{word}")],
+            [InlineKeyboardButton("🔄 Synonyms 🔄", callback_data=f"syn_{word}")],
+            [InlineKeyboardButton("➡️ Next ➡️", callback_data="next")],
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -135,7 +135,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if text:
         word = text.lower()
-        definition = definitions.get_definition(word)
+        definition = definitions.get_definitions(word)
 
         if definition:
             # Create an inline button for adding the word
@@ -210,7 +210,7 @@ async def synonyms_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
     else:
         await query.edit_message_text(
-            text=query.message.text + f"\n\nCouldn't find synonyms for {word}..",
+            text=query.message.text + f"\n\nCouldn't find synonyms for {word}...",
             reply_markup=reply_markup
         )
 
@@ -219,13 +219,13 @@ async def next_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     # Generate new word and definition
     word = definitions.get_random_word()
-    definition = definitions.get_definition(word)
+    definition = definitions.get_definitions(word)
 
     if word and definition:
         keyboard = [
-            [InlineKeyboardButton("Add Word", callback_data=f"add_{word}")],
-            [InlineKeyboardButton("Synonyms", callback_data=f"syn_{word}")],
-            [InlineKeyboardButton("Next", callback_data="next")]
+            [InlineKeyboardButton("📝 Add Word 📝", callback_data=f"add_{word}")],
+            [InlineKeyboardButton("🔄 Synonyms 🔄", callback_data=f"syn_{word}")],
+            [InlineKeyboardButton("➡️ Next ➡️", callback_data="next")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -297,7 +297,6 @@ def main():
         application.add_handler(synonyms_callback_handler)
         application.add_handler(images_callback_handler)
 
-        print("Bot started")
         application.run_polling()
 
     except Exception as e:

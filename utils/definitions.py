@@ -1,26 +1,30 @@
 import requests
 from bs4 import BeautifulSoup
 
-def get_definition(word):
-    url = f"https://www.thefreedictionary.com/{word}"
-    response = requests.get(url)
+def get_definitions(word):
+    response = requests.get(f'https://api.dictionaryapi.dev/api/v2/entries/en/{word}')
+    
+    if response.status_code == 200:
+        data = response.json()
 
-    if response.status_code != 200:
-        print(f"definitions.py: Unable to fetch data for {word}")
-        return None
+        if data:
+            meanings = data[0]['meanings']
+            definitions_dict = {
+                meaning['partOfSpeech']: [definition['definition'] for definition in meaning['definitions']]
+                for meaning in meanings
+            }
+            
+            # Format the output string
+            formatted_output = "Here are some definitions for the word you requested 📖\n"
+            for part_of_speech, definitions in definitions_dict.items():
+                formatted_output += f"\n{part_of_speech.capitalize()}:\n"
+                for index, definition in enumerate(definitions, 1):
+                    formatted_output += f"{index}. {definition}\n"
+            
+            return formatted_output
 
-    soup = BeautifulSoup(response.text, 'html.parser')
-
-    # Look for the definition section in the HTML
-    definition_sections = soup.find('div', {'class': 'ds-list'})
-    if not definition_sections:
-        print(f"definitions.py: No definition found for {word}.")
-        return None
-
-    # Collect all definitions
-    definition_list = [definition.get_text().strip() for definition in definition_sections]
-
-    return '\n'.join(definition_list)
+    print(f"definitions.py: No definitions found for '{word}'")
+    return None
 
 def get_random_word():
     url = "https://www.thefreedictionary.com/dictionary.htm"

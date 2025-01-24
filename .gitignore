@@ -17,4 +17,6 @@ __pycache__/
 
 .vscode/
 
+# Local stuff
+prototypes
 local_assets
