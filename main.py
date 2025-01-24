@@ -118,16 +118,27 @@ async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
 
     plot_png = stats_stuff.get_word_progress_plot(conn=conn, user_id=user_id)
+    summary = stats_stuff.get_stats_summary(conn=conn, user_id=user_id)
 
     # Send png
     if plot_png:
         await context.bot.send_photo(
         chat_id=update.effective_chat.id,
-        photo=plot_png,
-        caption="Here is a graph of how many words you added over time\n\n*Great job\\!*", parse_mode="MarkdownV2"
+        photo=plot_png
         )
     else:
         await update.message.reply_text("Coundn't find data for stats...")
+
+    if summary:
+        formatted_summary = (
+            f"📊 *Your Vocabulary Stats* 📊\n\n"
+            f"📚 Total words saved: *{summary['total_words']}*\n"
+            f"🌟 Days studying: *{summary['days_studying']}*\n"
+            f"⭐ Daily average: *{summary['daily_average']:.1f}*"
+            f"\n\nKeep up the good work! 🌹"
+        )
+        await update.message.reply_text(formatted_summary, parse_mode="Markdown")
+    
 
 # Handle messages
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):

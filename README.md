@@ -1,6 +1,6 @@
 # What is it?
 
-This is a Telegram bot designed to help users look up **word definitions** in English, save them, and manage a personal **vocabulary list**. It connects to a PostgreSQL database and fetches word definitions from [thefreedictionary.com](https://thefreedictionary.com)
+This is a Telegram bot designed to help users look up **word definitions** in English, save them, and manage a personal **vocabulary list**. It connects to a PostgreSQL database and fetches word definitions from [Dictionary API](https://dictionaryapi.dev/). It also fetches images from [Unsplash API](https://www.unsplash.com) and scrapes synonyms from [thesaurus.com](https://www.thesaurus.com).
 
 ## Usage
 
@@ -18,6 +18,7 @@ This is a Telegram bot designed to help users look up **word definitions** in En
 The bot relies on:
 
 - **Telegram**: python-telegram-bot v21.9 for bot functionality
+- **Dictionary API**: for fetching word definitions
 - **Web Scraping**:
   - requests v2.32.3
   - BeautifulSoup4 v4.12.3
