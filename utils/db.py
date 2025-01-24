@@ -25,3 +25,37 @@ def db_close(conn):
     if conn:
         conn.close()
         print("db.py: Database connection closed.")
+
+# Queries
+def get_query(user_id) -> dict:
+    return {"plot":
+            f"""
+            SELECT DATE(added_at) as date, COUNT(*) as count
+            FROM user_words
+            WHERE user_id = {user_id}
+            GROUP BY DATE(added_at)
+            ORDER BY date;
+            """,
+            "words_today":
+            f"""
+                SELECT COUNT(*) 
+                FROM user_words 
+                WHERE user_id = {user_id} 
+                AND DATE(added_at) = CURRENT_DATE
+            """,
+            "words_this_week":
+            f"""
+                SELECT COUNT(*) 
+                FROM user_words 
+                WHERE user_id = {user_id} 
+                AND added_at >= CURRENT_DATE - INTERVAL '7 days'
+            """,
+            "best_day":
+            f"""
+                SELECT DATE(added_at) as date, COUNT(*) as count
+                FROM user_words
+                WHERE user_id = {user_id}
+                GROUP BY DATE(added_at)
+                ORDER BY count DESC
+                LIMIT 1
+            """}

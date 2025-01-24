@@ -88,7 +88,7 @@ async def word_stream_command(update: Update, context: ContextTypes.DEFAULT_TYPE
 
         await update.message.reply_text(f"{word}\n\n{definition}", reply_markup=reply_markup)
     else:
-        await update.message.reply_text("I coudnt't find a suitable word for you..")
+        await update.message.reply_text("I coudnt't find a suitable word for you...")
 
 async def mywords_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     conn = context.bot_data["conn"]
@@ -118,16 +118,30 @@ async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
 
     plot_png = stats_stuff.get_word_progress_plot(conn=conn, user_id=user_id)
+    summary = stats_stuff.get_stats_summary(conn=conn, user_id=user_id)
 
     # Send png
     if plot_png:
         await context.bot.send_photo(
         chat_id=update.effective_chat.id,
-        photo=plot_png,
-        caption="Here is a graph of how many words you added over time\n\n*Great job\\!*", parse_mode="MarkdownV2"
+        photo=plot_png
         )
     else:
         await update.message.reply_text("Coundn't find data for stats...")
+
+    if summary:
+        formatted_summary = (
+            f"📊 *Your Vocabulary Stats* 📊\n\n"
+            f"📚 Total words saved: *{summary['total_words']}*\n"
+            f"🌟 Days studying: *{summary['days_studying']}*\n"
+            f"⭐ Daily average: *{summary['daily_average']:.1f}*\n\n"
+            f"☀️ Words added today: *{summary['words_today']}*\n"
+            f"📅 Words added this week: *{summary['words_this_week']}*\n\n"
+            f"🏆 Best day: *{summary['best_day']['date']}* with *{summary['best_day']['count']}* words\n\n"
+            f"Keep up the good work! 🌹"
+        )
+        await update.message.reply_text(formatted_summary, parse_mode="Markdown")
+    
 
 # Handle messages
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -262,7 +276,7 @@ async def send_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     else:
         await query.edit_message_text(
-            text=query.message.text + f"\n\nCouldn't find an image for {word}..",
+            text=query.message.text + f"\n\nCouldn't find an image for {word}...",
             reply_markup=reply_markup
         )
 
