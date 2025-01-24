@@ -76,13 +76,13 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
 async def word_stream_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     word = definitions.get_random_word()
-    definition = definitions.get_definition(word)
+    definition = definitions.get_definitions(word)
 
     if word and definition:
         keyboard = [
-            [InlineKeyboardButton("Add Word", callback_data=f"add_{word}")],
-            [InlineKeyboardButton("Synonyms", callback_data=f"syn_{word}")],
-            [InlineKeyboardButton("Next", callback_data="next")],
+            [InlineKeyboardButton("📝 Add Word 📝", callback_data=f"add_{word}")],
+            [InlineKeyboardButton("🔄 Synonyms 🔄", callback_data=f"syn_{word}")],
+            [InlineKeyboardButton("➡️ Next ➡️", callback_data="next")],
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -135,14 +135,15 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if text:
         word = text.lower()
-        definition = definitions.get_definition(word)
+        definition = definitions.get_definitions(word)
 
         if definition:
             # Create an inline button for adding the word
             keyboard = [
                 [InlineKeyboardButton("📝 Add Word 📝", callback_data=f"add_{word}")],
                 [InlineKeyboardButton("🔄 Synonyms 🔄", callback_data=f"syn_{word}")],
-                [InlineKeyboardButton(f"🖼️ Pictire for {word} 🖼️", callback_data=f"pic_{word}")]
+                [InlineKeyboardButton(f"🖼️ Pictire for {word} 🖼️", callback_data=f"pic_{word}")],
+                [InlineKeyboardButton("🔊 Pronunciation 🎧", callback_data=f"pron_{word}")]
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -210,7 +211,7 @@ async def synonyms_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
     else:
         await query.edit_message_text(
-            text=query.message.text + f"\n\nCouldn't find synonyms for {word}..",
+            text=query.message.text + f"\n\nCouldn't find synonyms for {word}...",
             reply_markup=reply_markup
         )
 
@@ -219,13 +220,13 @@ async def next_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     # Generate new word and definition
     word = definitions.get_random_word()
-    definition = definitions.get_definition(word)
+    definition = definitions.get_definitions(word)
 
     if word and definition:
         keyboard = [
-            [InlineKeyboardButton("Add Word", callback_data=f"add_{word}")],
-            [InlineKeyboardButton("Synonyms", callback_data=f"syn_{word}")],
-            [InlineKeyboardButton("Next", callback_data="next")]
+            [InlineKeyboardButton("📝 Add Word 📝", callback_data=f"add_{word}")],
+            [InlineKeyboardButton("🔄 Synonyms 🔄", callback_data=f"syn_{word}")],
+            [InlineKeyboardButton("➡️ Next ➡️", callback_data="next")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -265,6 +266,31 @@ async def send_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=reply_markup
         )
 
+async def send_pronunciation(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    word = query.data.split('_', 1)[1]
+    word = word.strip().lower()
+    audio_url = definitions.get_pronunciation_url(word)
+
+    keyboard = [
+        [button for button in row if "pron_" not in button.callback_data]
+        for row in query.message.reply_markup.inline_keyboard
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    if audio_url:
+        await context.bot.send_audio(
+            chat_id=query.message.chat_id,
+            audio=audio_url,
+            caption=f"Here is the pronunciation for {word} 🎧"
+        )
+        await query.edit_message_text(text=query.message.text, reply_markup=reply_markup)
+    else:
+        await query.edit_message_text(
+            text=query.message.text + f"\n\nCouldn't find a pronunciation for {word}...",
+            reply_markup=reply_markup
+        )
+
 def main():
     application = Application.builder().token(TOKEN).build()
     conn = None
@@ -284,6 +310,7 @@ def main():
         next_word_callback_handler = CallbackQueryHandler(next_callback, pattern="^next$")
         synonyms_callback_handler = CallbackQueryHandler(synonyms_callback, pattern="^syn_")
         images_callback_handler = CallbackQueryHandler(send_image, pattern="^pic_")
+        pronunciation_callback_handler = CallbackQueryHandler(send_pronunciation, pattern="^pron_")
 
         # Add handlers to application
         application.add_handler(start_handler)
@@ -296,8 +323,8 @@ def main():
         application.add_handler(next_word_callback_handler)
         application.add_handler(synonyms_callback_handler)
         application.add_handler(images_callback_handler)
+        application.add_handler(pronunciation_callback_handler)
 
-        print("Bot started")
         application.run_polling()
 
     except Exception as e:
