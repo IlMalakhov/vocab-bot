@@ -1,6 +1,10 @@
 import requests
 import random
+import os
+from dotenv import load_dotenv
 from bs4 import BeautifulSoup
+
+load_dotenv()
 
 def get_definitions(word) -> str:
     response = requests.get(f'https://api.dictionaryapi.dev/api/v2/entries/en/{word}')
@@ -52,11 +56,33 @@ def get_example(word) -> str:
     print(f"definitions.py: No examples found for '{word}'")
     return None
 
-def get_random_word() -> str:
-    with open('lists/wordlist.10000' , 'r') as file:
+def get_random_word(level = None) -> str:
+    if level == 'C2':
+        with open(os.getenv("C2_WORDLIST_PATH"), 'r') as file:
+            words = file.read().split(',')
+            random_word = random.choice(words).strip()
+            return random_word
+    elif level == 'C1':
+        with open(os.getenv("C1_WORDLIST_PATH"), 'r') as file:
+            words = file.read().split(',')
+            random_word = random.choice(words).strip()
+            return random_word
+    elif level == 'B2':
+        with open(os.getenv("B2_WORDLIST_PATH"), 'r') as file:
+            words = file.read().split(',')
+            random_word = random.choice(words).strip()
+            return random_word
+    elif level == 'B1':
+        with open(os.getenv("B1_WORDLIST_PATH"), 'r') as file:
+            words = file.read().split(',')
+            random_word = random.choice(words).strip()
+            return random_word
+    
+    # Default case - random word from general list
+    with open(os.getenv("RANDOM_WORDLIST_PATH"), 'r') as file:
         words = file.readlines()
         random_word = random.choice(words).strip()
-
+    
     return random_word
 
 def get_synonyms(word) -> list:
@@ -76,7 +102,7 @@ def get_synonyms(word) -> list:
     synonyms = synonyms_section.find_all('li')
 
     # Then try this
-    # Really don't ask about it
+    # and really don't ask about it
     if not synonyms:
         synonyms = synonyms_section.find_all('span')
 
