@@ -1,4 +1,5 @@
 import requests
+import random
 from bs4 import BeautifulSoup
 
 def get_definitions(word) -> str:
@@ -26,20 +27,37 @@ def get_definitions(word) -> str:
     print(f"definitions.py: No definitions found for '{word}'")
     return None
 
-def get_random_word() -> str:
-    url = "https://www.thefreedictionary.com/dictionary.htm"
-    response = requests.get(url)
-
-    if response.status_code != 200:
-        return f"definitions.py: Unable to fetch data for random words"
+def get_example(word) -> str:
+    response = requests.get(f'https://api.dictionaryapi.dev/api/v2/entries/en/{word}')
     
-    soup = BeautifulSoup(response.text, 'html.parser')
+    if response.status_code == 200:
+        data = response.json()
 
-    random_section = soup.find('ul', {'class': 'lst'})
-    random_list = [random_word.get_text().strip() for random_word in random_section]
+        if data:
+            meanings = data[0]['meanings']
+            examples_dict = {
+                meaning['partOfSpeech']: [example['example'] for example in meaning['examples']]
+                for meaning in meanings
+            }
+            
+            # Format the output string
+            formatted_output = "Here are some examples for the word you requested 📖\n"
+            for part_of_speech, examples in examples_dict.items():
+                formatted_output += f"\n{part_of_speech.capitalize()}:\n"
+                for index, example in enumerate(examples, 1):
+                    formatted_output += f"{index}. {example}\n"
+            
+            return formatted_output
 
-    # The first list item is an empty string, so...
-    return random_list[1]
+    print(f"definitions.py: No examples found for '{word}'")
+    return None
+
+def get_random_word() -> str:
+    with open('lists/wordlist.10000' , 'r') as file:
+        words = file.readlines()
+        random_word = random.choice(words).strip()
+
+    return random_word
 
 def get_synonyms(word) -> list:
     url = f"https://www.thesaurus.com/browse/{word}"
