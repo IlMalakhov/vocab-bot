@@ -163,7 +163,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             await update.message.reply_text(definition, reply_markup=reply_markup)
         else:
-            await update.message.reply_text("I coudnt't find the definition for that...")
+            await update.message.reply_text("I coudn't find the definition for that...")
     else:
         await update.message.reply_text("Something seems wrong with the word you sent me...")
 
@@ -250,7 +250,7 @@ async def next_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=reply_markup
         )
     else:
-        await query.edit_message_text("I couldn't find a suitable word for you..")
+        await query.edit_message_text("I couldn't find a suitable word for you...")
 
 async def send_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query

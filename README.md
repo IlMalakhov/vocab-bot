@@ -6,9 +6,10 @@ This is a Telegram bot designed to help users look up **word definitions** in En
 
 - **Start the Bot**: Send `/start` to the bot to introduce itself.
 - **Look Up Definitions**: Type any word, and the bot will return its definition.
-  - **Save Words**: Click the “Add Word” button under a definition to save it.
+  - **Save Words**: Click “Add Word” button to save it.
   - **Get Synonyms**: Click "Synonyms" button to show synonyms from [thesaurus.com](https://www.thesaurus.com)
   - **View pictures**: Click "Picture" button to fetch a picture using [Unsplash](https://www.unsplash.com) API
+  - **Practice Pronunciation**: Click "Pronunciation" button to listen to the pronunciation of the word.
 - **View Saved Words**: Use `/mywords` to see your saved vocabulary list.
 - **View learning progress**: Use `/stats` to see a graph of how many words you added.
 - **Word Stream**: Use `/word_stream` to get a random word from the dictionary.

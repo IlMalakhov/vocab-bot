@@ -1,5 +1,10 @@
 import requests
+import random
+import os
+from dotenv import load_dotenv
 from bs4 import BeautifulSoup
+
+load_dotenv()
 
 def get_definitions(word) -> str:
     response = requests.get(f'https://api.dictionaryapi.dev/api/v2/entries/en/{word}')
@@ -26,20 +31,59 @@ def get_definitions(word) -> str:
     print(f"definitions.py: No definitions found for '{word}'")
     return None
 
-def get_random_word() -> str:
-    url = "https://www.thefreedictionary.com/dictionary.htm"
-    response = requests.get(url)
-
-    if response.status_code != 200:
-        return f"definitions.py: Unable to fetch data for random words"
+def get_example(word) -> str:
+    response = requests.get(f'https://api.dictionaryapi.dev/api/v2/entries/en/{word}')
     
-    soup = BeautifulSoup(response.text, 'html.parser')
+    if response.status_code == 200:
+        data = response.json()
 
-    random_section = soup.find('ul', {'class': 'lst'})
-    random_list = [random_word.get_text().strip() for random_word in random_section]
+        if data:
+            meanings = data[0]['meanings']
+            examples_dict = {
+                meaning['partOfSpeech']: [example['example'] for example in meaning['examples']]
+                for meaning in meanings
+            }
+            
+            # Format the output string
+            formatted_output = "Here are some examples for the word you requested 📖\n"
+            for part_of_speech, examples in examples_dict.items():
+                formatted_output += f"\n{part_of_speech.capitalize()}:\n"
+                for index, example in enumerate(examples, 1):
+                    formatted_output += f"{index}. {example}\n"
+            
+            return formatted_output
 
-    # The first list item is an empty string, so...
-    return random_list[1]
+    print(f"definitions.py: No examples found for '{word}'")
+    return None
+
+def get_random_word(level = None) -> str:
+    if level == 'C2':
+        with open(os.getenv("C2_WORDLIST_PATH"), 'r') as file:
+            words = file.read().split(',')
+            random_word = random.choice(words).strip()
+            return random_word
+    elif level == 'C1':
+        with open(os.getenv("C1_WORDLIST_PATH"), 'r') as file:
+            words = file.read().split(',')
+            random_word = random.choice(words).strip()
+            return random_word
+    elif level == 'B2':
+        with open(os.getenv("B2_WORDLIST_PATH"), 'r') as file:
+            words = file.read().split(',')
+            random_word = random.choice(words).strip()
+            return random_word
+    elif level == 'B1':
+        with open(os.getenv("B1_WORDLIST_PATH"), 'r') as file:
+            words = file.read().split(',')
+            random_word = random.choice(words).strip()
+            return random_word
+    
+    # Default case - random word from general list
+    with open(os.getenv("RANDOM_WORDLIST_PATH"), 'r') as file:
+        words = file.readlines()
+        random_word = random.choice(words).strip()
+    
+    return random_word
 
 def get_synonyms(word) -> list:
     url = f"https://www.thesaurus.com/browse/{word}"
@@ -58,7 +102,7 @@ def get_synonyms(word) -> list:
     synonyms = synonyms_section.find_all('li')
 
     # Then try this
-    # Really don't ask about it
+    # and really don't ask about it
     if not synonyms:
         synonyms = synonyms_section.find_all('span')
 
