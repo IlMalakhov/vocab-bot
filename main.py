@@ -76,14 +76,14 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "• */word\\_stream* \\- Discover random vocabulary 🎲\n"
         "• */word\\_stream \\{b1, b2, c1, c2\\}* \\- Learn words by level 📚\n"
         "• */mywords* \\- View your saved collection 📖\n"
-        "• */stats* \\- Track your learning progress 📈\n\n"
+        "• */stats* \\- Track your learning progress 📈\n"
+        "• */chat* \\- Ask *vocability™️* anything about English 💭\n"
         "To save words, just tap *Add word* below any definition\\! ✨",
         parse_mode="MarkdownV2")
     
 async def word_stream_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     level = args[0] if args else None
-    print(f"Word stream args: {args}")
 
     word = definitions.get_random_word(level=str(level))
     definition = definitions.get_definitions(word)
