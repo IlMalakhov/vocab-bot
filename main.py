@@ -12,6 +12,9 @@ import logging
 # Utilities
 from utils import db, definitions, images, stats_stuff
 
+# Chat
+from model.vocability import chat
+
 # Enable logging
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
@@ -73,14 +76,14 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "• */word\\_stream* \\- Discover random vocabulary 🎲\n"
         "• */word\\_stream \\{b1, b2, c1, c2\\}* \\- Learn words by level 📚\n"
         "• */mywords* \\- View your saved collection 📖\n"
-        "• */stats* \\- Track your learning progress 📈\n\n"
+        "• */stats* \\- Track your learning progress 📈\n"
+        "• */chat* \\- Ask *vocability™️* anything about English 💭\n"
         "To save words, just tap *Add word* below any definition\\! ✨",
         parse_mode="MarkdownV2")
     
 async def word_stream_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     level = args[0] if args else None
-    print(f"Word stream args: {args}")
 
     word = definitions.get_random_word(level=str(level))
     definition = definitions.get_definitions(word)
@@ -149,6 +152,32 @@ async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         await update.message.reply_text(formatted_summary, parse_mode="Markdown")
     
+async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    message = ' '.join(context.args) if context.args else None
+    
+    if not message:
+        await update.message.reply_text(
+            "Please include your message after /chat\n"
+            "Example: /chat what's the difference between affect and effect?"
+        )
+        return
+
+    try:
+        await context.bot.send_chat_action(
+        chat_id=update.effective_chat.id,
+        action="typing"
+        )
+        # Get response from model
+        response = await chat(message)
+        
+        # Send response
+        await update.message.reply_text(response)
+        
+    except Exception as e:
+        logger.error(f"Chat error: {e}")
+        await update.message.reply_text(
+            "Sorry, I'm having trouble with your request..."
+        )
 
 # Handle messages
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -333,6 +362,7 @@ def main():
         synonyms_callback_handler = CallbackQueryHandler(synonyms_callback, pattern="^syn_")
         images_callback_handler = CallbackQueryHandler(send_image, pattern="^pic_")
         pronunciation_callback_handler = CallbackQueryHandler(send_pronunciation, pattern="^pron_")
+        chat_handler = CommandHandler("chat", chat_command)
 
         # Add handlers to application
         application.add_handler(start_handler)
@@ -346,6 +376,7 @@ def main():
         application.add_handler(synonyms_callback_handler)
         application.add_handler(images_callback_handler)
         application.add_handler(pronunciation_callback_handler)
+        application.add_handler(chat_handler)
 
         application.run_polling()
 
