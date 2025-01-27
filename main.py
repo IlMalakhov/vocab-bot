@@ -267,8 +267,9 @@ async def synonyms_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def next_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-
-    level = query.data.split('_', 1)[1]
+    
+    # Get level from callback data if it exists
+    level = query.data.split('_', 1)[1] if '_' in query.data else None
 
     word = definitions.get_random_word(level=level)
     definition = definitions.get_definitions(word)
@@ -358,8 +359,8 @@ def main():
         stats_handler = CommandHandler("stats", stats_command)
         message_handler = MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message)
         add_word_callback_handler = CallbackQueryHandler(add_word_callback, pattern="^add_")
-        next_level_word_callback_handler = CallbackQueryHandler(next_callback, pattern="^next_")
-        next_word_callback_handler = CallbackQueryHandler(next_callback, pattern="^next$")
+        next_word_callback_handler = CallbackQueryHandler(next_callback, pattern="^next_")
+        next_no_level_word_callback_handler = CallbackQueryHandler(next_callback, pattern="next")
         synonyms_callback_handler = CallbackQueryHandler(synonyms_callback, pattern="^syn_")
         images_callback_handler = CallbackQueryHandler(send_image, pattern="^pic_")
         pronunciation_callback_handler = CallbackQueryHandler(send_pronunciation, pattern="^pron_")
@@ -373,8 +374,8 @@ def main():
         application.add_handler(stats_handler)
         application.add_handler(message_handler)
         application.add_handler(add_word_callback_handler)
-        application.add_handler(next_level_word_callback_handler)
         application.add_handler(next_word_callback_handler)
+        application.add_handler(next_no_level_word_callback_handler)
         application.add_handler(synonyms_callback_handler)
         application.add_handler(images_callback_handler)
         application.add_handler(pronunciation_callback_handler)
