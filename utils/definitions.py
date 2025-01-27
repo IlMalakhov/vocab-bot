@@ -56,24 +56,16 @@ def get_example(word) -> str:
     print(f"definitions.py: No examples found for '{word}'")
     return None
 
-def get_random_word(level = None) -> str:
-    if level == 'C2':
-        with open(os.getenv("C2_WORDLIST_PATH"), 'r') as file:
-            words = file.read().split(',')
-            random_word = random.choice(words).strip()
-            return random_word
-    elif level == 'C1':
-        with open(os.getenv("C1_WORDLIST_PATH"), 'r') as file:
-            words = file.read().split(',')
-            random_word = random.choice(words).strip()
-            return random_word
-    elif level == 'B2':
-        with open(os.getenv("B2_WORDLIST_PATH"), 'r') as file:
-            words = file.read().split(',')
-            random_word = random.choice(words).strip()
-            return random_word
-    elif level == 'B1':
-        with open(os.getenv("B1_WORDLIST_PATH"), 'r') as file:
+def get_random_word(level=None) -> str:
+    level_paths = {
+        'c2': os.getenv("C2_WORDLIST_PATH"),
+        'c1': os.getenv("C1_WORDLIST_PATH"),
+        'b2': os.getenv("B2_WORDLIST_PATH"),
+        'b1': os.getenv("B1_WORDLIST_PATH")
+    }
+
+    if level and level.lower() in level_paths:
+        with open(level_paths[level.lower()], 'r') as file:
             words = file.read().split(',')
             random_word = random.choice(words).strip()
             return random_word
