@@ -67,28 +67,35 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "Type any word to get its definition 📖\n\n"
-        "Save words by tapping *Add word* under the definition\n\n"
-        "• */word\\_stream* to learn random new words 🎲\n"
-        "• */mywords* to see your saved words 📚\n"
-        "• */stats* to see your progress 📊",
+        "Here's what I can do for you: 🎉\n\n"
+        "Simply type any word to see its definition\\! 🔍\n\n"
+        "*Main Features:*\n"
+        "• */word\\_stream* \\- Discover random vocabulary 🎲\n"
+        "• */word\\_stream \\{b1, b2, c1, c2\\}* \\- Learn words by level 📚\n"
+        "• */mywords* \\- View your saved collection 📖\n"
+        "• */stats* \\- Track your learning progress 📈\n\n"
+        "To save words, just tap *Add word* below any definition\\! ✨",
         parse_mode="MarkdownV2")
     
 async def word_stream_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    word = definitions.get_random_word()
+    args = context.args
+    level = args[0] if args else None
+    print(f"Word stream args: {args}")
+
+    word = definitions.get_random_word(level=str(level))
     definition = definitions.get_definitions(word)
 
     if word and definition:
         keyboard = [
             [InlineKeyboardButton("📝 Add Word 📝", callback_data=f"add_{word}")],
             [InlineKeyboardButton("🔄 Synonyms 🔄", callback_data=f"syn_{word}")],
-            [InlineKeyboardButton("➡️ Next ➡️", callback_data="next")],
+            [InlineKeyboardButton("➡️ Next ➡️", callback_data=f"next_{level}" if level else "next")],
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
         await update.message.reply_text(f"{word}\n\n{definition}", reply_markup=reply_markup)
     else:
-        await update.message.reply_text("I coudnt't find a suitable word for you...")
+        await update.message.reply_text("I couldn't find a suitable word for you...")
 
 async def mywords_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     conn = context.bot_data["conn"]
@@ -231,16 +238,17 @@ async def synonyms_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def next_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    
-    # Generate new word and definition
-    word = definitions.get_random_word()
+
+    level = query.data.split('_', 1)[1]
+
+    word = definitions.get_random_word(level=level)
     definition = definitions.get_definitions(word)
 
     if word and definition:
         keyboard = [
             [InlineKeyboardButton("📝 Add Word 📝", callback_data=f"add_{word}")],
             [InlineKeyboardButton("🔄 Synonyms 🔄", callback_data=f"syn_{word}")],
-            [InlineKeyboardButton("➡️ Next ➡️", callback_data="next")]
+            [InlineKeyboardButton("➡️ Next ➡️", callback_data=f"next_{level}")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -321,7 +329,7 @@ def main():
         stats_handler = CommandHandler("stats", stats_command)
         message_handler = MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message)
         add_word_callback_handler = CallbackQueryHandler(add_word_callback, pattern="^add_")
-        next_word_callback_handler = CallbackQueryHandler(next_callback, pattern="^next$")
+        next_word_callback_handler = CallbackQueryHandler(next_callback, pattern="^next_")
         synonyms_callback_handler = CallbackQueryHandler(synonyms_callback, pattern="^syn_")
         images_callback_handler = CallbackQueryHandler(send_image, pattern="^pic_")
         pronunciation_callback_handler = CallbackQueryHandler(send_pronunciation, pattern="^pron_")
