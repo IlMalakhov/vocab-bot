@@ -12,6 +12,9 @@ import logging
 # Utilities
 from utils import db, definitions, images, stats_stuff
 
+# Chat
+from model.vocability import chat
+
 # Enable logging
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
@@ -149,6 +152,32 @@ async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         await update.message.reply_text(formatted_summary, parse_mode="Markdown")
     
+async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    message = ' '.join(context.args) if context.args else None
+    
+    if not message:
+        await update.message.reply_text(
+            "Please include your message after /chat\n"
+            "Example: /chat what's the difference between affect and effect?"
+        )
+        return
+
+    try:
+        await context.bot.send_chat_action(
+        chat_id=update.effective_chat.id,
+        action="typing"
+        )
+        # Get response from model
+        response = await chat(message)
+        
+        # Send response
+        await update.message.reply_text(response)
+        
+    except Exception as e:
+        logger.error(f"Chat error: {e}")
+        await update.message.reply_text(
+            "Sorry, I'm having trouble with your request..."
+        )
 
 # Handle messages
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -333,6 +362,7 @@ def main():
         synonyms_callback_handler = CallbackQueryHandler(synonyms_callback, pattern="^syn_")
         images_callback_handler = CallbackQueryHandler(send_image, pattern="^pic_")
         pronunciation_callback_handler = CallbackQueryHandler(send_pronunciation, pattern="^pron_")
+        chat_handler = CommandHandler("chat", chat_command)
 
         # Add handlers to application
         application.add_handler(start_handler)
@@ -346,6 +376,7 @@ def main():
         application.add_handler(synonyms_callback_handler)
         application.add_handler(images_callback_handler)
         application.add_handler(pronunciation_callback_handler)
+        application.add_handler(chat_handler)
 
         application.run_polling()
 
