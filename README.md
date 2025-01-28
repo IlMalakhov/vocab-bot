@@ -19,7 +19,7 @@ This is a Telegram bot designed to help users look up **word definitions** in En
 - **Word Stream**: Use `/word_stream` to learn random words.
   - **By Level**: Use `/word_stream <list>` to get words from specific language levels (e.g., c1, c2).
 
-- **Chat**: You can chat with the bot using `/chat <message>` and it will respond with a custom [Ollama](https://ollama.com) model designed to make understanding new vocabulary easy.
+- **Chat**: You can chat with the bot using `/chat <message>` and it will respond using [Hugging Face Inference API](https://huggingface.co/docs/api-inference/index) with [Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) model.
 
 ## Dependencies
 
@@ -31,7 +31,7 @@ This is a Telegram bot designed to help users look up **word definitions** in En
 - **Image Fetching**:
   - Unsplash API for fetching images
 - **Chatting**:
-  - A custom ollama model
+  - Hugging Face Inference API
 - **Database**:
   - PostgreSQL 16
   - psycopg2-binary v2.9.10
