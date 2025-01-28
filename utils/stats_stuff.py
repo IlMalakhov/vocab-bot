@@ -48,7 +48,7 @@ def get_word_progress_plot(conn, user_id):
             return buffer
 
     except Exception as e:
-        print(f"Error generating statistics: {e}")
+        print(f"stats.py: Error generating statistics: {e}")
         return None
         
 def get_stats_summary(conn, user_id):
@@ -89,5 +89,5 @@ def get_stats_summary(conn, user_id):
             }
         
     except Exception as e:
-        print(f"Error generating summary: {e}")
+        print(f"stats.py: Error generating summary: {e}")
         return None

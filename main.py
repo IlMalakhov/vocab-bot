@@ -25,7 +25,6 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 TOKEN = os.getenv('TELEGRAM_TOKEN')
-BOT_USERNAME = os.getenv('BOT_USERNAME')
 
 # Commands
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -66,7 +65,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     disable_web_page_preview=True)
 
     except Exception as e:
-        print(f"Error fetching or inserting info about the user: {e}")
+        logger.error(f"Error fetching or inserting info about the user: {e}")
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
@@ -98,7 +97,7 @@ async def word_stream_command(update: Update, context: ContextTypes.DEFAULT_TYPE
 
         await update.message.reply_text(f"{word}\n\n{definition}", reply_markup=reply_markup)
     else:
-        await update.message.reply_text("I couldn't find a suitable word for you...")
+        await update.message.reply_text("I couldn't find a good enough word for you...")
 
 async def mywords_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     conn = context.bot_data["conn"]
@@ -127,6 +126,11 @@ async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     conn = context.bot_data["conn"]
     user_id = update.message.from_user.id
 
+    await context.bot.send_chat_action(
+        chat_id=update.effective_chat.id,
+        action="typing"
+    )
+
     plot_png = stats_stuff.get_word_progress_plot(conn=conn, user_id=user_id)
     summary = stats_stuff.get_stats_summary(conn=conn, user_id=user_id)
 
@@ -154,6 +158,7 @@ async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
 async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = ' '.join(context.args) if context.args else None
+    user_id = update.effective_user.id
     
     if not message:
         await update.message.reply_text(
@@ -168,7 +173,7 @@ async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         action="typing"
         )
         # Get response from model
-        response = await chat(message)
+        response = await chat(message, user_id)
         
         # Send response
         await update.message.reply_text(response)
@@ -384,7 +389,7 @@ def main():
         application.run_polling()
 
     except Exception as e:
-        print(f"Error: {e}")
+        logger.error(f"Error in main: {e}")
 
     finally:
         if conn:
