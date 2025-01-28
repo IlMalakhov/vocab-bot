@@ -127,6 +127,11 @@ async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     conn = context.bot_data["conn"]
     user_id = update.message.from_user.id
 
+    await context.bot.send_chat_action(
+        chat_id=update.effective_chat.id,
+        action="typing"
+    )
+
     plot_png = stats_stuff.get_word_progress_plot(conn=conn, user_id=user_id)
     summary = stats_stuff.get_stats_summary(conn=conn, user_id=user_id)
 
@@ -154,6 +159,7 @@ async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
 async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = ' '.join(context.args) if context.args else None
+    user_id = update.effective_user.id
     
     if not message:
         await update.message.reply_text(
@@ -168,7 +174,7 @@ async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         action="typing"
         )
         # Get response from model
-        response = await chat(message)
+        response = await chat(message, user_id)
         
         # Send response
         await update.message.reply_text(response)
