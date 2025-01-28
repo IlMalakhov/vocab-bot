@@ -25,7 +25,6 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 TOKEN = os.getenv('TELEGRAM_TOKEN')
-BOT_USERNAME = os.getenv('BOT_USERNAME')
 
 # Commands
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -66,7 +65,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     disable_web_page_preview=True)
 
     except Exception as e:
-        print(f"Error fetching or inserting info about the user: {e}")
+        logger.error(f"Error fetching or inserting info about the user: {e}")
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
@@ -98,7 +97,7 @@ async def word_stream_command(update: Update, context: ContextTypes.DEFAULT_TYPE
 
         await update.message.reply_text(f"{word}\n\n{definition}", reply_markup=reply_markup)
     else:
-        await update.message.reply_text("I couldn't find a suitable word for you...")
+        await update.message.reply_text("I couldn't find a good enough word for you...")
 
 async def mywords_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     conn = context.bot_data["conn"]
@@ -390,7 +389,7 @@ def main():
         application.run_polling()
 
     except Exception as e:
-        print(f"Error: {e}")
+        logger.error(f"Error in main: {e}")
 
     finally:
         if conn:

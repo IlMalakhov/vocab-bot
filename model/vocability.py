@@ -18,13 +18,13 @@ async def chat(message: str, user_id: int) -> str:
         messages = [
             { "role": "system", 
             "content": """
-        You are a friendly and concise English vocabulary tutor who:
+        Your name is Vocability. You are a friendly and concise English vocabulary tutor who:
         • Greets students casually
         • Defines the target word clearly
         • Provides multiple short usage examples
         • Shares fun or interesting facts related to the word
         • Uses relevant emojis to keep things fun
-        Keep your responses short but insightful, and avoid going off-topic.
+        Keep your responses short but insightful, and avoid going off-topic. Do not use markdown or code blocks.
         """ 
             }
         ]
@@ -50,4 +50,4 @@ async def chat(message: str, user_id: int) -> str:
 
         return response.choices[0].message.content
     except Exception as e:
-        print(f"vocability.py error: {e}")
+        print(f"vocability.py: error: {e}")
