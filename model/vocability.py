@@ -7,7 +7,7 @@ load_dotenv()
 client = InferenceClient(api_key=os.getenv("HF_TOKEN"))
 
 conversation_history = {}
-MAX_HISTORY = 5
+MAX_HISTORY = 10
 
 async def chat(message: str, user_id: int) -> str:
     try:
