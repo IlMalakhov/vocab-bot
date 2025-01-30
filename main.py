@@ -30,6 +30,19 @@ TOKEN = os.getenv('TELEGRAM_TOKEN')
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     conn = context.bot_data["conn"]
     user_id = update.message.from_user.id
+
+    keyboard = [
+        [
+            InlineKeyboardButton("B1", callback_data="level_B1"),
+            InlineKeyboardButton("B2", callback_data="level_B2")
+        ],
+        [
+            InlineKeyboardButton("C1", callback_data="level_C1"),
+            InlineKeyboardButton("C2", callback_data="level_C2")
+        ]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
     try:
         with conn.cursor() as cursor:
             # Check if the user already exists in db
@@ -48,8 +61,11 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     "1\\. Type any word to get its definition 💬\n"
                     "2\\. /mywords to see your wordlist 📚\n\n"
                     "_I can do a lot more, just use_ */help* _and see for yourself_ 🎉\n\n\n"
-                    "Also, check out [our bot's GitHub](https://github.com/IlMalakhov/vocab-bot) to take a peek under the hood ⚙️", 
-                    parse_mode="MarkdownV2")
+                    "Also, check out [our bot's GitHub](https://github.com/IlMalakhov/vocab-bot) to take a peek under the hood ⚙️\n\n"
+                    "Change your language level below:", 
+                    parse_mode="MarkdownV2", 
+                    reply_markup=reply_markup, 
+                    disable_web_page_preview=True)
             else:
                 # User does not exist
                 cursor.execute("INSERT INTO users (user_id) VALUES (%s);", (user_id,))
@@ -58,14 +74,35 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     "Nice to meet you, I'm Vocab Bot\\! ☀️\n\n"                    
                     "I will help you define and remember new vocabulary 📖\n\n"
                     "1\\. Type any word to get its definition 💬\n"
-                    "2\\. /mywords to see your wordlist 📚\n\n"
+                    "2\\. */mywords* to see your wordlist 📚\n\n"
                     "_I can do a lot more, just use_ */help* _and see for yourself_ 🎉\n\n\n" 
-                    "Also, check out [our bot's GitHub](https://github.com/IlMalakhov/vocab-bot) to take a peek under the hood 🛠️", 
+                    "Also, check out [our bot's GitHub](https://github.com/IlMalakhov/vocab-bot) to take a peek under the hood 🛠️\n\n"
+                    "Now let's set your language level:", 
                     parse_mode="MarkdownV2",
+                    reply_markup=reply_markup,
                     disable_web_page_preview=True)
 
     except Exception as e:
         logger.error(f"Error fetching or inserting info about the user: {e}")
+
+async def level_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    conn = context.bot_data["conn"]
+    user_id = query.from_user.id
+    level = query.data.split('_', 1)[1]
+
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                           UPDATE users 
+                           SET level = %s 
+                           WHERE user_id = %s;""", (level, user_id))
+            conn.commit()
+
+    except Exception as e:
+        logger.error(f"Error updating user's level: {e}")
+
+    await query.answer(f"Your level is set to {level} 📚")
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
@@ -76,7 +113,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "• */word\\_stream \\{b1, b2, c1, c2\\}* \\- Learn words by level 📚\n"
         "• */mywords* \\- View your saved collection 📖\n"
         "• */stats* \\- Track your learning progress 📈\n"
-        "• */chat* \\- Ask *vocability™️* anything about English 💭\n"
+        "• */chat* \\- Ask *vocability* anything about English 💭\n"
         "To save words, just tap *Add word* below any definition\\! ✨",
         parse_mode="MarkdownV2")
     
@@ -362,6 +399,7 @@ def main():
         mywords_handler = CommandHandler("mywords", mywords_command)
         word_stream_handler = CommandHandler("word_stream", word_stream_command)
         stats_handler = CommandHandler("stats", stats_command)
+        chat_handler = CommandHandler("chat", chat_command)
         message_handler = MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message)
         add_word_callback_handler = CallbackQueryHandler(add_word_callback, pattern="^add_")
         next_word_callback_handler = CallbackQueryHandler(next_callback, pattern="^next_")
@@ -369,7 +407,9 @@ def main():
         synonyms_callback_handler = CallbackQueryHandler(synonyms_callback, pattern="^syn_")
         images_callback_handler = CallbackQueryHandler(send_image, pattern="^pic_")
         pronunciation_callback_handler = CallbackQueryHandler(send_pronunciation, pattern="^pron_")
-        chat_handler = CommandHandler("chat", chat_command)
+        set_level_callback_handler = CallbackQueryHandler(level_callback, pattern="^level_")
+        
+    
 
         # Add handlers to application
         application.add_handler(start_handler)
@@ -384,6 +424,7 @@ def main():
         application.add_handler(synonyms_callback_handler)
         application.add_handler(images_callback_handler)
         application.add_handler(pronunciation_callback_handler)
+        application.add_handler(set_level_callback_handler)
         application.add_handler(chat_handler)
 
         application.run_polling()

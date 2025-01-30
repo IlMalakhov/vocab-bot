@@ -28,7 +28,13 @@ def db_close(conn):
 
 # Queries
 def get_query(user_id) -> dict:
-    return {"plot":
+    return {"get_level":
+            f"""
+            SELECT level
+            FROM users
+            WHERE id = {user_id}
+            """,
+            "plot":
             f"""
             SELECT DATE(added_at) as date, COUNT(*) as count
             FROM user_words
