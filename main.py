@@ -106,15 +106,15 @@ async def level_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "Here's what I can do for you: 🎉\n\n"
+        "🎉 Here's what I can do for you 🎉\n\n"
         "Simply type any word to see its definition\\! 🔍\n\n"
-        "*Main Features:*\n"
         "• */word\\_stream* \\- Discover random vocabulary 🎲\n"
-        "• */word\\_stream \\{b1, b2, c1, c2\\}* \\- Learn words by level 📚\n"
+        "• */word\\_stream* *b1*, *b2*, *c1* or *c2* sets the difficulty 🦾\n"
         "• */mywords* \\- View your saved collection 📖\n"
         "• */stats* \\- Track your learning progress 📈\n"
-        "• */chat* \\- Ask *vocability* anything about English 💭\n"
-        "To save words, just tap *Add word* below any definition\\! ✨",
+        "• */chat* \\- Ask *vocability* anything about English 💬\n\n"
+        "To save words, just tap *Add word* below any definition\\! ✨\n\n"
+        "You can also find *synonyms* 🔄, *images* 🖼️ and *pronunciation* 🎧 if you send the word to me\n\n",
         parse_mode="MarkdownV2")
     
 async def word_stream_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
