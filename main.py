@@ -114,9 +114,22 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "• */stats* \\- Track your learning progress 📈\n"
         "• */chat* \\- Ask *vocability* anything about English 💬\n\n"
         "To save words, just tap *Add word* below any definition\\! ✨\n\n"
-        "You can also find *synonyms* 🔄, *images* 🖼️ and *pronunciation* 🎧 if you send the word to me\n\n",
+        "You can also find *synonyms* 🔄, *images* 🖼️ and *pronunciation* 🎧 if you send the word to me\n\n"
+        "Find out about your /privacy 🛡️\n\n",
         parse_mode="MarkdownV2")
-    
+
+async def privacy_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "🛡️ *Privacy Policy* 🛡️\n\n"
+        "I'm only here to help you learn English vocabulary 📚\n\n"
+        "• I don't store any personal data about you, except for your Telegram user ID\n"
+        "• I don't share your data with anyone else\n"
+        "• I don't use your data for any other purposes than to provide you with the best learning experience\n\n"
+        "If you have any questions or concerns, feel free to ask me on *[GitHub](https://github.com/IlMalakhov/vocab-bot)*\n\n"
+        "_Thank you for using Vocab Bot_ 🌟",
+        parse_mode="MarkdownV2",
+        disable_web_page_preview=True)
+
 async def word_stream_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
     level = args[0] if args else None
@@ -400,6 +413,7 @@ def main():
         word_stream_handler = CommandHandler("word_stream", word_stream_command)
         stats_handler = CommandHandler("stats", stats_command)
         chat_handler = CommandHandler("chat", chat_command)
+        privacy_handler = CommandHandler("privacy", privacy_command)
         message_handler = MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message)
         add_word_callback_handler = CallbackQueryHandler(add_word_callback, pattern="^add_")
         next_word_callback_handler = CallbackQueryHandler(next_callback, pattern="^next_")
@@ -426,6 +440,7 @@ def main():
         application.add_handler(pronunciation_callback_handler)
         application.add_handler(set_level_callback_handler)
         application.add_handler(chat_handler)
+        application.add_handler(privacy_handler)
 
         application.run_polling()
 
