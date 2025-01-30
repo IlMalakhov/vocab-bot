@@ -59,9 +59,10 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     "*Welcome back\\!* ☀️\n\n"
                     "I will help you define and remember new vocabulary 📖\n\n"
                     "1\\. Type any word to get its definition 💬\n"
-                    "2\\. /mywords to see your wordlist 📚\n\n"
-                    "_I can do a lot more, just use_ */help* _and see for yourself_ 🎉\n\n\n"
-                    "Also, check out [our bot's GitHub](https://github.com/IlMalakhov/vocab-bot) to take a peek under the hood ⚙️\n\n"
+                    "2\\. Start a */word\\_stream* to discover new words 🎲\n"
+                    "2\\. */mywords* to see your wordlist 📚\n\n"
+                    "_I can do a lot more, just use_ */help* _and see for yourself_ 🎉\n\n"
+                    "Check out *[our bot's GitHub](https://github.com/IlMalakhov/vocab-bot)* to take a peek under the hood ⚙️\n\n"
                     "Change your language level below:", 
                     parse_mode="MarkdownV2", 
                     reply_markup=reply_markup, 
@@ -74,13 +75,12 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     "Nice to meet you, I'm Vocab Bot\\! ☀️\n\n"                    
                     "I will help you define and remember new vocabulary 📖\n\n"
                     "1\\. Type any word to get its definition 💬\n"
+                    "2\\. Start a */word\\_stream* to discover new words 🎲\n"
                     "2\\. */mywords* to see your wordlist 📚\n\n"
-                    "_I can do a lot more, just use_ */help* _and see for yourself_ 🎉\n\n\n" 
-                    "Also, check out [our bot's GitHub](https://github.com/IlMalakhov/vocab-bot) to take a peek under the hood 🛠️\n\n"
+                    "_I can do a lot more, just use_ */help* _and see for yourself_ 🎉\n\n" 
                     "Now let's set your language level:", 
                     parse_mode="MarkdownV2",
-                    reply_markup=reply_markup,
-                    disable_web_page_preview=True)
+                    reply_markup=reply_markup)
 
     except Exception as e:
         logger.error(f"Error fetching or inserting info about the user: {e}")
