@@ -60,15 +60,15 @@ async def elaborate(word: str) -> str:
                 { "role": "system", 
                 "content": 
                 f"""Please elaborate on the word '{word}'.
-                The definition was already provided in the previous message. 
+                The definition was already provided in the previous message. Do not provide the definition again.
                 Try to provide multiple short usage examples, share fun or interesting facts related to the word, 
                 and use relevant emojis to keep things fun. Add a small section with useful mnemonics or tips to remember the word.
-                Do not use markdown or code blocks.
+                Keep your responses short but insightful, and avoid going off-topic. Do not use markdown or code blocks.
                 """
                 }
             ],
             temperature=0.8,
-            max_tokens=150,
+            max_tokens=250,
             top_p=0.7
         )
 

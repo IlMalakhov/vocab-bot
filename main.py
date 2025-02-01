@@ -365,7 +365,7 @@ async def next_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("🔄 Synonyms 🔄", callback_data=f"syn_{word}")],
             [InlineKeyboardButton(f"🖼️ Pictire for {word} 🖼️", callback_data=f"pic_{word}")],
             [InlineKeyboardButton("🔊 Pronunciation 🎧", callback_data=f"pron_{word}")],
-            [InlineKeyboardButton("🤔 Tell me more 🤔", callback_data=f"elaborate_{word}")],
+            [InlineKeyboardButton("🤔 Ask Vocab Bot 🤔", callback_data=f"elaborate_{word}")],
             [InlineKeyboardButton("➡️ Next ➡️", callback_data=f"next_{level}")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
