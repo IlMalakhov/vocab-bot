@@ -13,7 +13,7 @@ import logging
 from utils import db, definitions, images, stats_stuff
 
 # Chat
-from model.vocability import chat
+from model.vocability import chat, elaborate
 
 # Enable logging
 logging.basicConfig(
@@ -112,7 +112,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "• */word\\_stream* *b1*, *b2*, *c1* or *c2* sets the difficulty 🦾\n"
         "• */mywords* \\- View your saved collection 📖\n"
         "• */stats* \\- Track your learning progress 📈\n"
-        "• */chat* \\- Ask *vocability* anything about English 💬\n\n"
+        "• */chat* \\- Ask *Vocab Bot* anything about English 💬\n\n"
         "To save words, just tap *Add word* below any definition\\! ✨\n\n"
         "You can also find *synonyms* 🔄, *images* 🖼️ and *pronunciation* 🎧 if you send the word to me\n\n"
         "Find out about your /privacy 🛡️\n\n",
@@ -141,6 +141,9 @@ async def word_stream_command(update: Update, context: ContextTypes.DEFAULT_TYPE
         keyboard = [
             [InlineKeyboardButton("📝 Add Word 📝", callback_data=f"add_{word}")],
             [InlineKeyboardButton("🔄 Synonyms 🔄", callback_data=f"syn_{word}")],
+            [InlineKeyboardButton(f"🖼️ Pictire for {word} 🖼️", callback_data=f"pic_{word}")],
+            [InlineKeyboardButton("🔊 Pronunciation 🎧", callback_data=f"pron_{word}")],
+            [InlineKeyboardButton("🤔 Ask Vocab Bot 🤔", callback_data=f"elaborate_{word}")],
             [InlineKeyboardButton("➡️ Next ➡️", callback_data=f"next_{level}" if level else "next")],
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
@@ -234,6 +237,32 @@ async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "Sorry, I'm having trouble with your request..."
         )
 
+async def elaborate_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    word = query.data.split('_', 1)[1]
+    word = word.strip().lower()
+
+    keyboard = [
+    [button for button in row if "elaborate_" not in button.callback_data]
+    for row in query.message.reply_markup.inline_keyboard
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    try:
+        await context.bot.send_chat_action(
+        chat_id=update.effective_chat.id,
+        action="typing"
+        )
+
+        response = await elaborate(word)
+        await query.edit_message_text(
+            text=query.message.text + f"\n\n 🤖 💬 \n\nHere is what Vocab Bot had to say about it:\n\n{response}",
+            reply_markup=reply_markup
+            )
+
+    except Exception as e:
+        logger.error(f"Error trying to elaborate on a word: {e}")
+
 # Handle messages
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.strip()
@@ -248,7 +277,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 [InlineKeyboardButton("📝 Add Word 📝", callback_data=f"add_{word}")],
                 [InlineKeyboardButton("🔄 Synonyms 🔄", callback_data=f"syn_{word}")],
                 [InlineKeyboardButton(f"🖼️ Pictire for {word} 🖼️", callback_data=f"pic_{word}")],
-                [InlineKeyboardButton("🔊 Pronunciation 🎧", callback_data=f"pron_{word}")]
+                [InlineKeyboardButton("🔊 Pronunciation 🎧", callback_data=f"pron_{word}")],
+                [InlineKeyboardButton("🤔 Tell me more 🤔", callback_data=f"elaborate_{word}")]
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -333,6 +363,9 @@ async def next_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         keyboard = [
             [InlineKeyboardButton("📝 Add Word 📝", callback_data=f"add_{word}")],
             [InlineKeyboardButton("🔄 Synonyms 🔄", callback_data=f"syn_{word}")],
+            [InlineKeyboardButton(f"🖼️ Pictire for {word} 🖼️", callback_data=f"pic_{word}")],
+            [InlineKeyboardButton("🔊 Pronunciation 🎧", callback_data=f"pron_{word}")],
+            [InlineKeyboardButton("🤔 Ask Vocab Bot 🤔", callback_data=f"elaborate_{word}")],
             [InlineKeyboardButton("➡️ Next ➡️", callback_data=f"next_{level}")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
@@ -422,6 +455,7 @@ def main():
         images_callback_handler = CallbackQueryHandler(send_image, pattern="^pic_")
         pronunciation_callback_handler = CallbackQueryHandler(send_pronunciation, pattern="^pron_")
         set_level_callback_handler = CallbackQueryHandler(level_callback, pattern="^level_")
+        elaborate_callback_handler = CallbackQueryHandler(elaborate_callback, pattern="^elaborate_")
         
     
 
@@ -441,6 +475,7 @@ def main():
         application.add_handler(set_level_callback_handler)
         application.add_handler(chat_handler)
         application.add_handler(privacy_handler)
+        application.add_handler(elaborate_callback_handler)
 
         application.run_polling()
 

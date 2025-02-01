@@ -11,6 +11,7 @@ This is a Telegram bot designed to help users look up **word definitions** in En
   - **Get Synonyms**: Click "Synonyms" button to show synonyms from [thesaurus.com](https://thesaurus.com)
   - **View pictures**: Click "Picture" button to fetch a picture using [Unsplash](https://unsplash.com) API
   - **Practice Pronunciation**: Click "Pronunciation" button to listen to the pronunciation of the word.
+  - **Ask for clarification**: Click "Ask Vocab Bot" button to ask for clarification on the definition.
 
 - **View Saved Words**: Use `/mywords` to see your saved vocabulary list.
 
@@ -30,7 +31,7 @@ This is a Telegram bot designed to help users look up **word definitions** in En
   - BeautifulSoup4 v4.12.3
 - **Image Fetching**:
   - Unsplash API for fetching images
-- **Chatting**:
+- **Chatting and Clarification capabilities**:
   - Hugging Face Inference API
 - **Database**:
   - PostgreSQL 16
@@ -75,10 +76,11 @@ UNSPLASH_API_KEY=<your_unsplash_access_key>
 
 This table stores information about the users interacting with the bot.
 
-| Column       | Type        | Constraints     | Description                         |
-| ------------ | ----------- | --------------- | ----------------------------------- |
-| `user_id`    | `BIGINT`    | `PRIMARY KEY`   | Unique identifier for the user.     |
-| `created_at` | `TIMESTAMP` | `DEFAULT NOW()` | The timestamp when the user joined. |
+| Column       | Type        | Constraints                                                      | Description                         |
+| ------------ | ----------- | ---------------------------------------------------------------- | ----------------------------------- |
+| `user_id`    | `BIGINT`    | `PRIMARY KEY`                                                    | Unique identifier for the user.     |
+| `created_at` | `TIMESTAMP` | `DEFAULT NOW()`                                                  | The timestamp when the user joined. |
+| `level`      | `TEXT`      | `CHECK (language_level IN ('a1', 'a2', 'b1', 'b2', 'c1', 'c2'))` | The user's language level.          |
 
 ---
 
