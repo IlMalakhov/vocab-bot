@@ -64,6 +64,17 @@ TELEGRAM_TOKEN=<your_telegram_token>
 
 # Unsplash API access key
 UNSPLASH_API_KEY=<your_unsplash_access_key>
+
+# Hugging Face API access token
+HF_TOKEN=<your_hugging_face_access_token>
+
+# Word lists for word stream
+RANDOM_WORDLIST_PATH=lists/wordlist.10000
+
+C2_WORDLIST_PATH=lists/c2.txt
+C1_WORDLIST_PATH=lists/c1.txt
+B2_WORDLIST_PATH=lists/b2.txt
+B1_WORDLIST_PATH=lists/b1.txt
 ```
 
 `TELEGRAM_TOKEN` is from [Bot Father](https://t.me/BotFather)
