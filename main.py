@@ -13,7 +13,7 @@ import logging
 from utils import db, definitions, images, stats_stuff
 
 # Chat
-from model.vocability import chat, elaborate
+from model.vocability import chat, elaborate, explain_stats
 
 # Enable logging
 logging.basicConfig(
@@ -207,8 +207,15 @@ async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"🏆 Best day: *{summary['best_day']['date']}* with *{summary['best_day']['count']}* words\n\n"
             f"Keep up the good work! 🌹"
         )
-        await update.message.reply_text(formatted_summary, parse_mode="Markdown")
-    
+        # Add button to explain stats
+        keyboard = [[InlineKeyboardButton("🧐 Explain My Stats 🧐", callback_data="explain_stats")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await update.message.reply_text(formatted_summary, parse_mode="Markdown", reply_markup=reply_markup)
+    else:
+        # If summary failed but plot didn't, add a message here or handle earlier
+        if not plot_png: # Only send this if both failed
+             await update.message.reply_text("Couldn't find data for stats...")
+
 async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = ' '.join(context.args) if context.args else None
     user_id = update.effective_user.id
@@ -229,13 +236,44 @@ async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         response = await chat(message, user_id)
         
         # Send response
-        await update.message.reply_text(response)
+        await update.message.reply_text(response, parse_mode="Markdown")
         
     except Exception as e:
         logger.error(f"Chat error: {e}")
         await update.message.reply_text(
             "Sorry, I'm having trouble with your request..."
         )
+
+async def explain_stats_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handles the callback query to explain stats."""
+    query = update.callback_query
+
+    conn = context.bot_data["conn"]
+    user_id = query.from_user.id
+
+    try:
+        await context.bot.send_chat_action(
+            chat_id=query.message.chat_id,
+            action="typing"
+        )
+
+        summary = stats_stuff.get_stats_summary(conn=conn, user_id=user_id)
+
+        if not summary:
+            await query.message.reply_text("Sorry, I couldn't retrieve your stats to explain them.")
+            return
+
+        explanation = await explain_stats(summary)
+
+        # Send the explanation as a new message
+        await query.message.reply_text(explanation, parse_mode="Markdown")
+
+        # Optionally, edit the original stats message to remove the button
+        # await query.edit_message_reply_markup(reply_markup=None)
+
+    except Exception as e:
+        logger.error(f"Error in explain_stats_callback: {e}")
+        await query.message.reply_text("Sorry, something went wrong while explaining your stats.")
 
 async def elaborate_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -256,6 +294,7 @@ async def elaborate_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
         response = await elaborate(word)
         await query.edit_message_text(
+            parse_mode="Markdown",
             text=query.message.text + f"\n\n 🤖 💬 \n\nHere is what Vocab Bot had to say about it:\n\n{response}",
             reply_markup=reply_markup
             )
@@ -456,8 +495,9 @@ def main():
         pronunciation_callback_handler = CallbackQueryHandler(send_pronunciation, pattern="^pron_")
         set_level_callback_handler = CallbackQueryHandler(level_callback, pattern="^level_")
         elaborate_callback_handler = CallbackQueryHandler(elaborate_callback, pattern="^elaborate_")
-        
-    
+        explain_stats_callback_handler = CallbackQueryHandler(explain_stats_callback, pattern="^explain_stats")
+
+
 
         # Add handlers to application
         application.add_handler(start_handler)
@@ -476,6 +516,7 @@ def main():
         application.add_handler(chat_handler)
         application.add_handler(privacy_handler)
         application.add_handler(elaborate_callback_handler)
+        application.add_handler(explain_stats_callback_handler)
 
         application.run_polling()
 
