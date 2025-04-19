@@ -4,7 +4,7 @@ This is a Telegram bot designed to help users look up **word definitions** in En
 
 ## Usage
 
-- **Start the Bot**: Send `/start` to the bot to introduce itself.
+- **Start the Bot**: Send `/start` to the bot to begin learning, this command also doubles as settings.
 
 - **Look Up Definitions**: Type any word, and the bot will return its definition.
   - **Save Words**: Click “Add Word” button to save it.
@@ -20,7 +20,7 @@ This is a Telegram bot designed to help users look up **word definitions** in En
 - **Word Stream**: Use `/word_stream` to learn random words.
   - **By Level**: Use `/word_stream <list>` to get words from specific language levels (e.g., c1, c2).
 
-- **Chat**: You can chat with the bot using `/chat <message>` and it will respond using [Hugging Face Inference API](https://huggingface.co/docs/api-inference/index) with [Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) model.
+- **Chat**: You can chat with the bot using `/chat <message>` and it will respond using [OpenRouter Inference API](https://openrouter.ai/docs/api-reference/overview) with [DeepSeek V3 0324](https://openrouter.ai/deepseek/deepseek-chat-v3-0324:free) model.
 
 ## Dependencies
 
@@ -32,7 +32,7 @@ This is a Telegram bot designed to help users look up **word definitions** in En
 - **Image Fetching**:
   - Unsplash API for fetching images
 - **Chatting and Clarification capabilities**:
-  - Hugging Face Inference API
+  - OpenRouter Inference API
 - **Database**:
   - PostgreSQL 16
   - psycopg2-binary v2.9.10
@@ -65,8 +65,8 @@ TELEGRAM_TOKEN=<your_telegram_token>
 # Unsplash API access key
 UNSPLASH_API_KEY=<your_unsplash_access_key>
 
-# Hugging Face API access token
-HF_TOKEN=<your_hugging_face_access_token>
+# OpenRouter API access token
+OPENROUTER_TOKEN=<your_open_router_access_token>
 
 # Word lists for word stream
 RANDOM_WORDLIST_PATH=lists/wordlist.10000
@@ -77,7 +77,7 @@ B2_WORDLIST_PATH=lists/b2.txt
 B1_WORDLIST_PATH=lists/b1.txt
 ```
 
-`TELEGRAM_TOKEN` is from [Bot Father](https://t.me/BotFather)
+`TELEGRAM_TOKEN` is obtained from [Bot Father](https://t.me/BotFather)
 
 ### Database Schema
 
